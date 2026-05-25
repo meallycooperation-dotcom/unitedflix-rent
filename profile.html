@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Rent Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container {
+            min-height: 100vh;
+            background: #f4f7fb;
+            padding: 40px 20px;
+        }
+
+        .profile-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .profile-section {
+            margin-bottom: 32px;
+        }
+
+        .profile-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .profile-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .profile-value {
+            font-size: 1.1rem;
+            color: #0f172a;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .profile-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 24px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 14px 24px;
+            background: #e2e8f0;
+            color: #1e293b;
+            border: none;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            flex: 1;
+            padding: 14px 24px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(220, 38, 38, 0.18);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #1f4ed8 0%, #2563eb 100%);
+            border-radius: 24px;
+            color: white;
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 24px;
+        }
+
+        .empty-state a {
+            display: inline-block;
+            padding: 12px 28px;
+            background: white;
+            color: #1f4ed8;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .empty-state a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 480px) {
+            .profile-container {
+                padding: 20px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .profile-card {
+                padding: 24px 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-wrapper">
+            <div id="profileContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import supabase from './supabase.js';
+        window.loadProfile = async function() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                showEmptyState();
+                return;
+            }
+
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (error || !profile) {
+                showEmptyState();
+                return;
+            }
+
+            showProfile(profile, session.user);
+        }
+
+        function showProfile(profile, authUser) {
+            const profileContent = document.getElementById('profileContent');
+
+            const joinDate = new Date(profile.created_at || Date.now());
+            const formattedDate = joinDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            profileContent.innerHTML = `
+                <div class="profile-header">
+                    <h1>My Profile</h1>
+                </div>
+
+                <div class="profile-card">
+                    <div class="profile-section">
+                        <div class="profile-label">Full Name</div>
+                        <div class="profile-value">${escapeHtml(profile.name)}</div>
+                    </div>
+
+                    <div class="profile-divider"></div>
+
+                    <div class="profile-section">
+                        <div class="profile-label">Email Address</div>
+                        <div class="profile-value">${escapeHtml(profile.email)}</div>
+                    </div>
+
+                    <div class="profile-divider"></div>
+
+                    <div class="profile-section">
+                        <div class="profile-label">Member Since</div>
+                        <div class="profile-value">${formattedDate}</div>
+                    </div>
+
+                    <div class="profile-divider"></div>
+
+                    <div class="button-group">
+                        <a href="index.html" class="btn-secondary">Back to Dashboard</a>
+                        <button class="btn-danger" onclick="handleLogout()">Sign Out</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showEmptyState() {
+            const profileContent = document.getElementById('profileContent');
+
+            profileContent.innerHTML = `
+                <div class="empty-state">
+                    <h2>Not Signed In</h2>
+                    <p>Please sign in to view your profile</p>
+                    <a href="login.html">Sign In</a>
+                </div>
+            `;
+        }
+
+        window.handleLogout = async function() {
+            if (confirm('Are you sure you want to sign out?')) {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            }
+        };
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Load profile on page load
+        window.addEventListener('load', window.loadProfile);
+    </script>
+</body>
+</html>

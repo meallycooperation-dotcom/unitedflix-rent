@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Management System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <h1>Rent Management</h1>
+                <p>Property management dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="tab" onclick="switchTab('apartments')">Apartments & Blocks</button>
+                <button class="tab" onclick="switchTab('houses')">Houses</button>
+                <button class="tab" onclick="switchTab('tenants')">Tenants</button>
+                <button class="tab" onclick="switchTab('payments')">Payments</button>
+                <button class="tab" onclick="switchTab('reports')">Reports</button>
+            </nav>
+        </aside>
+        <div class="main-panel">
+            <div class="topbar">
+                <button class="menu-toggle" onclick="toggleSidebar()">Menu</button>
+                <div class="topbar-title">Rent Management System</div>
+            </div>
+
+            <div class="container">
+                <div class="header">
+                    <h2>Rent Management System</h2>
+                    <p>Complete property and tenant management solution</p>
+                </div>
+
+                <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="grid-3">
+                    <div class="summary-box">
+                        <h3>Total Apartments</h3>
+                        <div class="number" id="dashApartments">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Total Blocks</h3>
+                        <div class="number" id="dashBlocks">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Total Houses</h3>
+                        <div class="number" id="dashHouses">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Occupied Houses</h3>
+                        <div class="number" id="dashOccupied">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Available Houses</h3>
+                        <div class="number" id="dashAvailable">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Active Tenants</h3>
+                        <div class="number" id="dashTenants">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Total Collection</h3>
+                        <div class="number" id="dashCollection">KSH 0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Total Arrears</h3>
+                        <div class="number" id="dashArrears">KSH 0</div>
+                    </div>
+                </div>
+
+                <div class="card report-card">
+                    <h2>Recent Payments</h2>
+                    <div id="dashPaymentHistory"></div>
+                </div>
+            </div>
+
+            <!-- Apartments & Blocks Tab -->
+            <div id="apartments" class="tab-content">
+                <div class="grid-2">
+                    <div>
+                        <div class="card">
+                            <h2>Create New Apartment</h2>
+                            <div class="form-group">
+                                <label>Apartment Name</label>
+                                <input type="text" id="apartmentName" placeholder="e.g., Amani">
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" id="apartmentLocation" placeholder="Apartment location">
+                            </div>
+                            <button class="btn btn-primary" onclick="createApartment()">Create Apartment</button>
+                        </div>
+
+                        <div class="card">
+                            <h2>Create Block</h2>
+                            <div class="form-group">
+                                <label>Select Apartment</label>
+                                <select id="blockApartmentSelect">
+                                    <option value="">Choose apartment...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Block Name/Letter</label>
+                                <input type="text" id="blockName" placeholder="e.g., A, B, C">
+                            </div>
+                            <button class="btn btn-primary" onclick="createBlock()">Create Block</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h2>Apartments & Blocks List</h2>
+                            <div id="apartmentBlocksList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Houses Tab -->
+            <div id="houses" class="tab-content">
+                <div class="grid-2">
+                    <div>
+                        <div class="card">
+                            <h2>Add House</h2>
+                            <div class="form-group">
+                                <label>Select Apartment</label>
+                                <select id="houseApartmentSelect" onchange="loadBlocks('houseBlockSelect', this.value)">
+                                    <option value="">Choose apartment...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Block</label>
+                                <select id="houseBlockSelect">
+                                    <option value="">Choose block...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Houses</label>
+                                <input type="number" id="numberOfHouses" placeholder="e.g., 10, 20" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Monthly Rent (KSH)</label>
+                                <input type="number" id="monthlyRent" placeholder="Rent amount">
+                            </div>
+                            <button class="btn btn-primary" onclick="createHouse()">Add House</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h2>Houses List</h2>
+                            <div class="form-group">
+                                <label>Filter by Apartment</label>
+                                <select id="houseFilterApartment" onchange="displayHouses()">
+                                    <option value="">All Apartments</option>
+                                </select>
+                            </div>
+                            <div id="housesList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenants Tab -->
+            <div id="tenants" class="tab-content">
+                <div class="grid-2">
+                    <div>
+                        <div class="card">
+                            <h2>Add Tenant</h2>
+                            <div class="form-group">
+                                <label>Select Apartment</label>
+                                <select id="tenantApartmentSelect" onchange="loadBlocks('tenantBlockSelect', this.value); loadHouses('tenantHouseSelect', this.value)">
+                                    <option value="">Choose apartment...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Block</label>
+                                <select id="tenantBlockSelect" onchange="filterHousesByBlock('tenantHouseSelect', document.getElementById('tenantApartmentSelect').value, this.value)">
+                                    <option value="">Choose block...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select House</label>
+                                <select id="tenantHouseSelect">
+                                    <option value="">Choose house...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tenant Full Name</label>
+                                <input type="text" id="tenantName" placeholder="Full name">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="tenantPhone" placeholder="Phone number">
+                            </div>
+                            <div class="form-group">
+                                <label>Previous Arrears (KSH)</label>
+                                <input type="number" id="tenantArrears" value="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Move-in Date</label>
+                                <input type="date" id="tenantMoveInDate">
+                            </div>
+                            <button class="btn btn-primary" onclick="addTenant()">Add Tenant</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h2>Tenants List</h2>
+                            <div id="tenantsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="payments" class="tab-content">
+                <div class="month-header">
+                    <h2>Current Month: <span id="currentMonthDisplay"></span></h2>
+                    <button class="btn btn-success" onclick="resetMonthlyCycle()">Start New Month Cycle</button>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <div class="card">
+                            <h2>Record Payment</h2>
+                            <div class="form-group">
+                                <label>Select Tenant</label>
+                                <select id="paymentTenantSelect" onchange="updatePaymentInfo()">
+                                    <option value="">Choose tenant...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>House Info</label>
+                                <input type="text" id="paymentHouseInfo" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Monthly Rent</label>
+                                <input type="text" id="paymentMonthlyRent" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Arrears</label>
+                                <input type="text" id="paymentArrears" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Amount Paid (KSH)</label>
+                                <input type="number" id="paymentAmount">
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Date</label>
+                                <input type="date" id="paymentDate">
+                            </div>
+                            <button class="btn btn-primary" onclick="recordPayment()">Record Payment</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h2>Payment History</h2>
+                            <div id="paymentHistory"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <div class="grid-3">
+                    <div class="summary-box">
+                        <h3>Total Houses</h3>
+                        <div class="number" id="totalHouses">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Total Tenants</h3>
+                        <div class="number" id="totalTenants">0</div>
+                    </div>
+                    <div class="summary-box">
+                        <h3>Monthly Collection</h3>
+                        <div class="number" id="monthlyCollection">0 KSH</div>
+                    </div>
+                </div>
+
+                <div class="card report-card">
+                    <h2>Detailed Reports</h2>
+                    <div class="form-group">
+                        <label>Select Apartment</label>
+                        <select id="reportApartmentSelect" onchange="generateReport()">
+                            <option value="">All Apartments</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-info" onclick="exportToExcel()">Export to Excel</button>
+                    <div id="reportTable"></div>
+                </div>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import './auth.js';
+        import './main.js';
+    </script>
+
+</body>
+</html>
