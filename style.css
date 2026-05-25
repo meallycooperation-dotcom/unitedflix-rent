@@ -11,7 +11,7 @@ body {
 }
 
 .app-shell {
-    display: grid;
+    display: none;
     grid-template-columns: 280px 1fr;
     gap: 24px;
     min-height: 100vh;

@@ -1,6 +1,12 @@
 import supabase from './supabase.js';
 import { checkAuthStatus } from './auth.js';
 
+// Immediate authentication check at top-level
+const session = await checkAuthStatus();
+if (!session) {
+    window.location.href = 'login.html';
+}
+
 // Data Storage
 let data = {
     apartments: [],
@@ -829,43 +835,38 @@ function escapeHtml(text) {
 }
 
 // Initialize
-window.onload = async function() {
-    // Check authentication
-    const session = await checkAuthStatus();
-    if (!session) {
-        window.location.href = 'login.html';
-        return;
-    }
+// Reveal UI only after auth is confirmed
+const shell = document.querySelector('.app-shell');
+if (shell) shell.style.display = 'grid';
 
-    // Load from cache first for instant UI response (Optimistic UI)
-    loadFromLocalStorage();
-    refreshAllDropdowns();
-    displayApartmentBlocks();
-    displayDashboard();
-    updateCurrentMonthDisplay();
+// Load from cache first for instant UI response (Optimistic UI)
+loadFromLocalStorage();
+refreshAllDropdowns();
+displayApartmentBlocks();
+displayDashboard();
+updateCurrentMonthDisplay();
 
-    // Then fetch fresh data from Supabase to sync
-    await window.loadInitialData();
-    refreshAllDropdowns();
-    updateCurrentMonthDisplay();
-    displayDashboard();
-    displayApartmentBlocks();
-    
-    // Set default payment date to today
-    const paymentDateInput = document.getElementById('paymentDate');
-    if (paymentDateInput) {
-        paymentDateInput.value = new Date().toISOString().split('T')[0];
+// Then fetch fresh data from Supabase to sync
+await window.loadInitialData();
+refreshAllDropdowns();
+updateCurrentMonthDisplay();
+displayDashboard();
+displayApartmentBlocks();
+
+// Set default payment date to today
+const paymentDateInput = document.getElementById('paymentDate');
+if (paymentDateInput) {
+    paymentDateInput.value = new Date().toISOString().split('T')[0];
+}
+
+// Check month cycle
+const today = new Date();
+const currentMonth = today.toISOString().slice(0, 7);
+if (currentMonth !== data.currentMonth && data.tenants.length > 0) {
+    if (confirm('New month detected. Would you like to update the rent cycle?')) {
+        resetMonthlyCycle();
     }
-    
-    // Check month cycle
-    const today = new Date();
-    const currentMonth = today.toISOString().slice(0, 7);
-    if (currentMonth !== data.currentMonth && data.tenants.length > 0) {
-        if (confirm('New month detected. Would you like to update the rent cycle?')) {
-            resetMonthlyCycle();
-        }
-    }
-};
+}
 
 // Expose functions to global scope for HTML event listeners
 Object.assign(window, {
